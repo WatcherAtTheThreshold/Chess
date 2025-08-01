@@ -1,39 +1,168 @@
 // Audio Manager - Music control and sound effects
-// Self-contained audio events and controls
+// Self-contained audio events and controls with enhanced error handling
 
 class AudioManager {
     constructor() {
         this.musicPlaying = false;
+        this.chessMusic = null;
+        this.musicToggle = null;
+        this.volumeSlider = null;
+        this.isReady = false;
+        
+        // Wait for DOM to be ready before initializing
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => this.initialize());
+        } else {
+            this.initialize();
+        }
+    }
+    
+    initialize() {
+        console.log('AudioManager: Initializing...');
+        
+        // Get DOM elements
         this.chessMusic = document.getElementById('chessMusic');
         this.musicToggle = document.getElementById('musicToggle');
         this.volumeSlider = document.getElementById('volumeSlider');
         
+        // Debug: Check if elements exist
+        console.log('AudioManager: Audio element found:', !!this.chessMusic);
+        console.log('AudioManager: Toggle button found:', !!this.musicToggle);
+        console.log('AudioManager: Volume slider found:', !!this.volumeSlider);
+        
+        if (!this.chessMusic) {
+            console.error('AudioManager: Audio element with id "chessMusic" not found');
+            return;
+        }
+        
+        if (!this.musicToggle) {
+            console.error('AudioManager: Music toggle button with id "musicToggle" not found');
+            return;
+        }
+        
+        if (!this.volumeSlider) {
+            console.error('AudioManager: Volume slider with id "volumeSlider" not found');
+            return;
+        }
+        
         this.initializeControls();
         this.setInitialVolume();
+        this.setupAudioEventListeners();
+        
+        console.log('AudioManager: Initialization complete');
     }
     
     initializeControls() {
         // Set up music toggle button
         if (this.musicToggle) {
-            this.musicToggle.addEventListener('click', () => this.toggleMusic());
+            // Remove any existing listeners
+            this.musicToggle.replaceWith(this.musicToggle.cloneNode(true));
+            this.musicToggle = document.getElementById('musicToggle');
+            
+            this.musicToggle.addEventListener('click', (e) => {
+                e.preventDefault();
+                console.log('AudioManager: Toggle button clicked');
+                this.toggleMusic();
+            });
+            
+            console.log('AudioManager: Music toggle listener attached');
         }
         
         // Set up volume slider
         if (this.volumeSlider) {
-            this.volumeSlider.addEventListener('input', (e) => this.setVolume(e.target.value));
-            this.volumeSlider.addEventListener('change', (e) => this.setVolume(e.target.value));
+            this.volumeSlider.addEventListener('input', (e) => {
+                console.log('AudioManager: Volume changed to:', e.target.value);
+                this.setVolume(e.target.value);
+            });
+            
+            this.volumeSlider.addEventListener('change', (e) => {
+                this.setVolume(e.target.value);
+            });
+            
+            console.log('AudioManager: Volume slider listeners attached');
         }
+    }
+    
+    setupAudioEventListeners() {
+        if (!this.chessMusic) return;
         
-        // Handle audio events
-        if (this.chessMusic) {
-            this.chessMusic.addEventListener('ended', () => this.onMusicEnded());
-            this.chessMusic.addEventListener('error', () => this.onMusicError());
-        }
+        // Audio loading events
+        this.chessMusic.addEventListener('loadstart', () => {
+            console.log('AudioManager: Started loading audio');
+        });
+        
+        this.chessMusic.addEventListener('canplay', () => {
+            console.log('AudioManager: Audio can start playing');
+            this.isReady = true;
+        });
+        
+        this.chessMusic.addEventListener('canplaythrough', () => {
+            console.log('AudioManager: Audio can play through without buffering');
+        });
+        
+        this.chessMusic.addEventListener('loadeddata', () => {
+            console.log('AudioManager: Audio data loaded');
+        });
+        
+        this.chessMusic.addEventListener('loadedmetadata', () => {
+            console.log('AudioManager: Audio metadata loaded, duration:', this.chessMusic.duration);
+        });
+        
+        // Playback events
+        this.chessMusic.addEventListener('play', () => {
+            console.log('AudioManager: Audio started playing');
+            this.musicPlaying = true;
+            this.updateMusicButton('🎵 Pause Music', true);
+        });
+        
+        this.chessMusic.addEventListener('pause', () => {
+            console.log('AudioManager: Audio paused');
+            this.musicPlaying = false;
+            this.updateMusicButton('🎵 Play Echoes of the Board', false);
+        });
+        
+        this.chessMusic.addEventListener('ended', () => {
+            console.log('AudioManager: Audio ended');
+            this.onMusicEnded();
+        });
+        
+        // Error events
+        this.chessMusic.addEventListener('error', (e) => {
+            console.error('AudioManager: Audio error:', e);
+            console.error('AudioManager: Error details:', {
+                code: this.chessMusic.error?.code,
+                message: this.chessMusic.error?.message,
+                networkState: this.chessMusic.networkState,
+                readyState: this.chessMusic.readyState
+            });
+            this.onMusicError();
+        });
+        
+        this.chessMusic.addEventListener('stalled', () => {
+            console.warn('AudioManager: Audio loading stalled');
+        });
+        
+        this.chessMusic.addEventListener('suspend', () => {
+            console.log('AudioManager: Audio loading suspended');
+        });
+        
+        this.chessMusic.addEventListener('abort', () => {
+            console.warn('AudioManager: Audio loading aborted');
+        });
+        
+        // Check if audio source exists
+        console.log('AudioManager: Audio source:', this.chessMusic.src || this.chessMusic.currentSrc);
+        console.log('AudioManager: Audio ready state:', this.chessMusic.readyState);
+        console.log('AudioManager: Audio network state:', this.chessMusic.networkState);
+        
+        // Try to preload
+        this.chessMusic.load();
     }
     
     setInitialVolume() {
         if (this.chessMusic) {
             this.chessMusic.volume = 0.3; // 30% volume by default
+            console.log('AudioManager: Initial volume set to 30%');
         }
         if (this.volumeSlider) {
             this.volumeSlider.value = 30;
@@ -41,7 +170,12 @@ class AudioManager {
     }
     
     toggleMusic() {
-        if (!this.chessMusic) return;
+        console.log('AudioManager: Toggle music called, current state:', this.musicPlaying);
+        
+        if (!this.chessMusic) {
+            console.error('AudioManager: No audio element available');
+            return;
+        }
         
         if (this.musicPlaying) {
             this.pauseMusic();
@@ -50,29 +184,80 @@ class AudioManager {
         }
     }
     
-    playMusic() {
-        if (!this.chessMusic) return;
+    async playMusic() {
+        if (!this.chessMusic) {
+            console.error('AudioManager: No audio element for playback');
+            return;
+        }
         
-        this.chessMusic.play().then(() => {
-            this.musicPlaying = true;
-            this.updateMusicButton('🎵 Pause Music', true);
-        }).catch(error => {
-            console.log('Could not play audio:', error);
-            this.updateMusicButton('🎵 Music Unavailable', false);
-        });
+        console.log('AudioManager: Attempting to play music...');
+        console.log('AudioManager: Ready state:', this.chessMusic.readyState);
+        console.log('AudioManager: Network state:', this.chessMusic.networkState);
+        
+        try {
+            // Check if we can play
+            if (this.chessMusic.readyState < 2) { // HAVE_CURRENT_DATA
+                console.log('AudioManager: Audio not ready, waiting...');
+                await new Promise((resolve, reject) => {
+                    const timeout = setTimeout(() => {
+                        reject(new Error('Audio loading timeout'));
+                    }, 5000);
+                    
+                    const onCanPlay = () => {
+                        clearTimeout(timeout);
+                        this.chessMusic.removeEventListener('canplay', onCanPlay);
+                        this.chessMusic.removeEventListener('error', onError);
+                        resolve();
+                    };
+                    
+                    const onError = (e) => {
+                        clearTimeout(timeout);
+                        this.chessMusic.removeEventListener('canplay', onCanPlay);
+                        this.chessMusic.removeEventListener('error', onError);
+                        reject(e);
+                    };
+                    
+                    this.chessMusic.addEventListener('canplay', onCanPlay);
+                    this.chessMusic.addEventListener('error', onError);
+                });
+            }
+            
+            const playPromise = this.chessMusic.play();
+            
+            if (playPromise !== undefined) {
+                await playPromise;
+                console.log('AudioManager: Music started successfully');
+            }
+            
+        } catch (error) {
+            console.error('AudioManager: Failed to play music:', error);
+            
+            // Handle specific error types
+            if (error.name === 'NotAllowedError') {
+                this.updateMusicButton('🎵 Click to Play (Browser Blocked)', false);
+                console.log('AudioManager: Autoplay blocked by browser - user interaction required');
+            } else if (error.name === 'NotSupportedError') {
+                this.updateMusicButton('🎵 Format Not Supported', false);
+                console.error('AudioManager: Audio format not supported');
+            } else {
+                this.updateMusicButton('🎵 Music Unavailable', false);
+                console.error('AudioManager: Unknown playback error:', error);
+            }
+        }
     }
     
     pauseMusic() {
         if (!this.chessMusic) return;
         
+        console.log('AudioManager: Pausing music');
         this.chessMusic.pause();
-        this.musicPlaying = false;
-        this.updateMusicButton('🎵 Play Echoes of the Board', false);
+        // Note: The 'pause' event listener will update the button state
     }
     
     updateMusicButton(text, isPlaying) {
         if (!this.musicToggle) return;
         
+        console.log('AudioManager: Updating button:', text, 'Playing:', isPlaying);
         this.musicToggle.textContent = text;
         
         if (isPlaying) {
@@ -87,6 +272,7 @@ class AudioManager {
         
         const volume = Math.max(0, Math.min(100, parseInt(value))) / 100;
         this.chessMusic.volume = volume;
+        console.log('AudioManager: Volume set to:', volume);
         
         // Update slider if called programmatically
         if (this.volumeSlider && this.volumeSlider.value != value) {
@@ -99,14 +285,36 @@ class AudioManager {
     }
     
     onMusicEnded() {
+        console.log('AudioManager: Music ended naturally');
         // Music loop is handled by HTML loop attribute
         // This is here for future sound effect handling
     }
     
     onMusicError() {
-        console.log('Audio error occurred');
+        console.error('AudioManager: Music error occurred');
         this.musicPlaying = false;
         this.updateMusicButton('🎵 Music Unavailable', false);
+    }
+    
+    // Debug method to check audio state
+    getDebugInfo() {
+        if (!this.chessMusic) {
+            return { error: 'No audio element' };
+        }
+        
+        return {
+            src: this.chessMusic.src || this.chessMusic.currentSrc,
+            readyState: this.chessMusic.readyState,
+            networkState: this.chessMusic.networkState,
+            duration: this.chessMusic.duration,
+            currentTime: this.chessMusic.currentTime,
+            volume: this.chessMusic.volume,
+            muted: this.chessMusic.muted,
+            paused: this.chessMusic.paused,
+            ended: this.chessMusic.ended,
+            loop: this.chessMusic.loop,
+            error: this.chessMusic.error
+        };
     }
     
     // Fade music in/out (for future use)
@@ -155,22 +363,18 @@ class AudioManager {
     // Future: Sound effects for moves, captures, etc.
     playMoveSound() {
         // Placeholder for move sound effect
-        // Could add a subtle click sound here
     }
     
     playCaptureSound() {
         // Placeholder for capture sound effect
-        // Could add a more dramatic sound here
     }
     
     playCheckSound() {
         // Placeholder for check sound effect
-        // Could add a warning chime here
     }
     
     playCheckmateSound() {
         // Placeholder for checkmate sound effect
-        // Could add a victory/defeat fanfare here
     }
     
     // Mute/unmute all audio
@@ -191,14 +395,14 @@ class AudioManager {
         return {
             playing: this.musicPlaying,
             volume: this.getVolume(),
-            muted: this.chessMusic ? this.chessMusic.muted : false
+            muted: this.chessMusic ? this.chessMusic.muted : false,
+            ready: this.isReady
         };
     }
     
     // Reset audio for new game (if needed)
     reset() {
         // Currently no reset needed, but placeholder for future functionality
-        // Could restart music or reset to specific track here
     }
 }
 
@@ -206,3 +410,13 @@ class AudioManager {
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = AudioManager;
 }
+
+// Make debug function available globally for troubleshooting
+window.debugAudio = function() {
+    if (window.gameModules && window.gameModules.audioManager) {
+        const audioManager = window.gameModules.audioManager();
+        if (audioManager) {
+            console.log('Audio Debug Info:', audioManager.getDebugInfo());
+        }
+    }
+};
