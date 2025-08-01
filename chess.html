@@ -17,7 +17,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;700&family=Source+Sans+Pro:wght@300;400&family=Bangers&display=swap" rel="stylesheet">
     
     <!-- External CSS -->
-    <link rel="stylesheet" href="chess.css">
+    <link rel="stylesheet" href="css/chess.css">
 </head>
 <body>
     <div class="background"></div>
@@ -62,12 +62,12 @@
                         <source src="music/mysticChess.mp3" type="audio/mpeg">
                         Your browser does not support the audio element.
                     </audio>
-                    <button class="music-btn" id="musicToggle" onclick="toggleMusic()">
+                    <button class="music-btn" id="musicToggle">
                         🎵 Play Echoes of the Board
                     </button>
                     <div class="volume-control">
                         <span>🔊</span>
-                        <input type="range" id="volumeSlider" min="0" max="100" value="30" onchange="setVolume(this.value)">
+                        <input type="range" id="volumeSlider" min="0" max="100" value="30">
                     </div>
                 </div>
                 <div class="game-status" id="gameStatus">White to move</div>
@@ -105,9 +105,9 @@
             </div>
             
             <div class="controls">
-                <button class="btn" onclick="newGame()">New Game</button>
-                <button class="btn" onclick="undoMove()">Undo Move</button>
-                <button class="btn" id="showLastMoveBtn" onclick="showLastAIMove()">Show Last Move</button>
+                <button class="btn" id="newGameBtn">New Game</button>
+                <button class="btn" id="undoMoveBtn">Undo Move</button>
+                <button class="btn" id="showLastMoveBtn">Show Last Move</button>
             </div>
             
             <div class="move-history" id="moveHistory">
@@ -148,7 +148,12 @@
         © 2025 Sketchy Ponderings | In collaboration with <a href="../second-gaze/" style="text-decoration: none;">The Second Gaze</a> & <a href="../" style="text-decoration: none;">Fairweather</a> — quietly relentless.
     </footer>
 
-    <!-- External JavaScript -->
-    <script src="chess.js"></script>
+    <!-- Modular JavaScript - Load in dependency order -->
+    <script src="js/game-engine.js"></script>
+    <script src="js/ui-controller.js"></script>
+    <script src="js/ai-player.js"></script>
+    <script src="js/particle-effects.js"></script>
+    <script src="js/audio-manager.js"></script>
+    <script src="js/main.js"></script>
 </body>
 </html>
