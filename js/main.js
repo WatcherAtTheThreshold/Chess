@@ -15,6 +15,9 @@ let gameState = {
     difficulty: 'novice' // Default difficulty level
 };
 
+// Status message timeout tracker
+let statusMessageTimeout = null;
+
 // Initialize all modules and set up the game
 function initializeGame() {
     try {
@@ -187,22 +190,45 @@ function updateDifficultyIndicator(difficulty) {
     console.log('Difficulty indicator updated to:', difficulty);
 }
 
-// Show a brief message when difficulty changes
+// Show a brief message when difficulty changes (FIXED VERSION)
 function showDifficultyChangeMessage(newDifficulty, oldDifficulty) {
     const statusElement = document.getElementById('gameStatus');
     if (!statusElement) return;
     
-    const originalText = statusElement.textContent;
+    // Clear any existing timeout to prevent message conflicts
+    if (statusMessageTimeout) {
+        clearTimeout(statusMessageTimeout);
+        statusMessageTimeout = null;
+    }
+    
     const difficultyInfo = getDifficultyDisplayInfo(newDifficulty);
     
     // Show difficulty change message
     statusElement.textContent = `Switched to ${difficultyInfo.icon} ${difficultyInfo.name} difficulty`;
     statusElement.style.color = getDifficultyColor(newDifficulty);
     
-    // Restore original message after 2.5 seconds
-    setTimeout(() => {
-        statusElement.textContent = originalText;
+    // Restore to current game state after 2.5 seconds
+    statusMessageTimeout = setTimeout(() => {
+        // Let the UI controller update the status to current game state
+        if (uiController && uiController.updateGameStatus) {
+            uiController.updateGameStatus();
+        } else {
+            // Fallback: determine current game state
+            if (gameEngine.gameOver) {
+                if (gameEngine.isCheckmate(gameEngine.currentPlayer)) {
+                    statusElement.textContent = `Checkmate! ${gameEngine.currentPlayer === 'white' ? 'Black' : 'White'} wins!`;
+                } else if (gameEngine.isStalemate(gameEngine.currentPlayer)) {
+                    statusElement.textContent = 'Stalemate! Draw!';
+                }
+            } else if (gameEngine.isInCheck(gameEngine.currentPlayer)) {
+                statusElement.textContent = `${gameEngine.currentPlayer === 'white' ? 'White' : 'Black'} is in check!`;
+            } else {
+                statusElement.textContent = `${gameEngine.currentPlayer === 'white' ? 'White' : 'Black'} to move`;
+            }
+        }
+        
         statusElement.style.color = ''; // Reset to default color
+        statusMessageTimeout = null; // Clear the timeout reference
     }, 2500);
 }
 
@@ -385,6 +411,12 @@ function newGame() {
         // Clear any existing particle effects
         particleEffects.clearAllParticles();
         
+        // Clear any pending status messages
+        if (statusMessageTimeout) {
+            clearTimeout(statusMessageTimeout);
+            statusMessageTimeout = null;
+        }
+        
         // Reset all modules
         gameEngine.reset();
         uiController.reset();
@@ -414,6 +446,12 @@ function newGame() {
 function undoMove() {
     try {
         if (gameEngine.moveHistory.length >= 2) {
+            // Clear any pending status messages
+            if (statusMessageTimeout) {
+                clearTimeout(statusMessageTimeout);
+                statusMessageTimeout = null;
+            }
+            
             // Undo last two moves (player + AI)
             for (let i = 0; i < 2; i++) {
                 const lastMove = gameEngine.moveHistory.pop();
@@ -458,6 +496,12 @@ function showLastAIMove() {
 // Error handling
 function handleGameError(error) {
     console.error('Game error:', error);
+    
+    // Clear any pending status messages
+    if (statusMessageTimeout) {
+        clearTimeout(statusMessageTimeout);
+        statusMessageTimeout = null;
+    }
     
     // Show user-friendly error message
     const statusElement = document.getElementById('gameStatus');
