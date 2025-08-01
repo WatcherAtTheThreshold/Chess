@@ -23,7 +23,7 @@ body {
 }
 
 .mist-overlay {
-    background: url('images/mist-overlay.png') repeat;
+    background: url('../assets/images/mist-overlay.png') repeat;
     opacity: 0.9;
     position: fixed;
     width: 100%;
