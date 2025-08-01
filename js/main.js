@@ -11,7 +11,8 @@ let audioManager;
 // Game state
 let gameState = {
     initialized: false,
-    playerTurn: true
+    playerTurn: true,
+    difficulty: 'novice' // Default difficulty level
 };
 
 // Initialize all modules and set up the game
@@ -36,6 +37,9 @@ function initializeGame() {
         // Set up game control button listeners
         setupGameControls();
         
+        // Set up difficulty button listeners
+        setupDifficultyControls();
+        
         gameState.initialized = true;
         console.log('Chess game initialized successfully');
         
@@ -43,6 +47,110 @@ function initializeGame() {
         console.error('Failed to initialize game:', error);
         handleGameError(error);
     }
+}
+
+// Set up difficulty button controls
+function setupDifficultyControls() {
+    const difficultyButtons = document.querySelectorAll('.difficulty-btn');
+    
+    if (difficultyButtons.length === 0) {
+        console.warn('No difficulty buttons found');
+        return;
+    }
+    
+    // Add click listeners to all difficulty buttons
+    difficultyButtons.forEach(button => {
+        button.addEventListener('click', (e) => {
+            const difficulty = e.target.dataset.difficulty;
+            if (difficulty) {
+                changeDifficulty(difficulty);
+            }
+        });
+    });
+    
+    // Set initial difficulty display
+    updateDifficultyDisplay(gameState.difficulty);
+    
+    console.log('Difficulty controls initialized');
+}
+
+// Change difficulty and update UI
+function changeDifficulty(newDifficulty) {
+    const validDifficulties = ['novice', 'knight', 'grandmaster'];
+    
+    if (!validDifficulties.includes(newDifficulty)) {
+        console.error('Invalid difficulty:', newDifficulty);
+        return;
+    }
+    
+    const oldDifficulty = gameState.difficulty;
+    gameState.difficulty = newDifficulty;
+    
+    // Update AI player with new difficulty
+    if (aiPlayer && aiPlayer.setDifficulty) {
+        aiPlayer.setDifficulty(newDifficulty);
+    }
+    
+    // Update visual display
+    updateDifficultyDisplay(newDifficulty);
+    
+    // Show feedback message
+    showDifficultyChangeMessage(newDifficulty, oldDifficulty);
+    
+    console.log(`Difficulty changed from ${oldDifficulty} to ${newDifficulty}`);
+}
+
+// Update difficulty button visual states
+function updateDifficultyDisplay(activeDifficulty) {
+    const difficultyButtons = document.querySelectorAll('.difficulty-btn');
+    
+    difficultyButtons.forEach(button => {
+        const buttonDifficulty = button.dataset.difficulty;
+        
+        if (buttonDifficulty === activeDifficulty) {
+            button.classList.add('active');
+        } else {
+            button.classList.remove('active');
+        }
+    });
+}
+
+// Show a brief message when difficulty changes
+function showDifficultyChangeMessage(newDifficulty, oldDifficulty) {
+    const statusElement = document.getElementById('gameStatus');
+    if (!statusElement) return;
+    
+    const originalText = statusElement.textContent;
+    const difficultyNames = {
+        'novice': '🛡️ Novice',
+        'knight': '⚔️ Knight', 
+        'grandmaster': '👑 Grandmaster'
+    };
+    
+    // Show difficulty change message
+    statusElement.textContent = `Switched to ${difficultyNames[newDifficulty]} difficulty`;
+    statusElement.style.color = getDifficultyColor(newDifficulty);
+    
+    // Restore original message after 2 seconds
+    setTimeout(() => {
+        statusElement.textContent = originalText;
+        statusElement.style.color = ''; // Reset to default color
+    }, 2000);
+}
+
+// Get theme color for each difficulty
+function getDifficultyColor(difficulty) {
+    const colors = {
+        'novice': 'rgba(76, 175, 80, 1)',
+        'knight': 'rgba(255, 152, 0, 1)',
+        'grandmaster': 'rgba(233, 30, 99, 1)'
+    };
+    return colors[difficulty] || '';
+}
+
+// Get current difficulty (for AI and other modules to use)
+function getCurrentDifficulty() {
+    return gameState.difficulty;
 }
 
 // Set up board square click interactions
@@ -194,10 +302,15 @@ function newGame() {
         uiController.reset();
         aiPlayer.reset();
         
+        // Ensure AI knows current difficulty after reset
+        if (aiPlayer.setDifficulty) {
+            aiPlayer.setDifficulty(gameState.difficulty);
+        }
+        
         // Reset game state
         gameState.playerTurn = true;
         
-        console.log('New game started');
+        console.log('New game started with difficulty:', gameState.difficulty);
         
     } catch (error) {
         console.error('Error starting new game:', error);
@@ -266,6 +379,10 @@ window.newGame = newGame;
 window.undoMove = undoMove;
 window.showLastAIMove = showLastAIMove;
 
+// Export difficulty functions for other modules to use
+window.getCurrentDifficulty = getCurrentDifficulty;
+window.changeDifficulty = changeDifficulty;
+
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
     // Small delay to ensure all elements are loaded
@@ -286,5 +403,6 @@ window.gameModules = {
     uiController: () => uiController,
     aiPlayer: () => aiPlayer,
     particleEffects: () => particleEffects,
-    audioManager: () => audioManager
+    audioManager: () => audioManager,
+    gameState: () => gameState
 };
