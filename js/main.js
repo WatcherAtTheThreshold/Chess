@@ -40,13 +40,53 @@ function initializeGame() {
         // Set up difficulty button listeners
         setupDifficultyControls();
         
+        // Add difficulty indicator to UI
+        addDifficultyIndicator();
+        
         gameState.initialized = true;
-        console.log('Chess game initialized successfully');
+        console.log('Chess game initialized successfully with difficulty:', gameState.difficulty);
         
     } catch (error) {
         console.error('Failed to initialize game:', error);
         handleGameError(error);
     }
+}
+
+// Add permanent difficulty indicator to the UI
+function addDifficultyIndicator() {
+    const gameStatus = document.getElementById('gameStatus');
+    if (!gameStatus) return;
+    
+    // Create container for status and difficulty indicator
+    const statusContainer = document.createElement('div');
+    statusContainer.className = 'game-status-container';
+    
+    // Create difficulty indicator
+    const difficultyIndicator = document.createElement('div');
+    difficultyIndicator.id = 'difficultyIndicator';
+    difficultyIndicator.className = `difficulty-indicator ${gameState.difficulty}`;
+    
+    // Get difficulty display info
+    const difficultyInfo = getDifficultyDisplayInfo(gameState.difficulty);
+    difficultyIndicator.innerHTML = `${difficultyInfo.icon} ${difficultyInfo.name}`;
+    
+    // Restructure the DOM
+    const parent = gameStatus.parentNode;
+    parent.insertBefore(statusContainer, gameStatus);
+    statusContainer.appendChild(gameStatus);
+    statusContainer.appendChild(difficultyIndicator);
+    
+    console.log('Difficulty indicator added to UI');
+}
+
+// Get difficulty display information
+function getDifficultyDisplayInfo(difficulty) {
+    const difficultyMap = {
+        'novice': { name: 'Novice', icon: '🛡️' },
+        'knight': { name: 'Knight', icon: '⚔️' },
+        'grandmaster': { name: 'Grandmaster', icon: '👑' }
+    };
+    return difficultyMap[difficulty] || difficultyMap.novice;
 }
 
 // Set up difficulty button controls
@@ -71,7 +111,7 @@ function setupDifficultyControls() {
     // Set initial difficulty display
     updateDifficultyDisplay(gameState.difficulty);
     
-    console.log('Difficulty controls initialized');
+    console.log('Difficulty controls initialized with default:', gameState.difficulty);
 }
 
 // Change difficulty and update UI
@@ -84,15 +124,28 @@ function changeDifficulty(newDifficulty) {
     }
     
     const oldDifficulty = gameState.difficulty;
-    gameState.difficulty = newDifficulty;
     
-    // Update AI player with new difficulty
-    if (aiPlayer && aiPlayer.setDifficulty) {
-        aiPlayer.setDifficulty(newDifficulty);
+    // Only change if different
+    if (oldDifficulty === newDifficulty) {
+        console.log('Difficulty already set to:', newDifficulty);
+        return;
     }
     
-    // Update visual display
+    gameState.difficulty = newDifficulty;
+    
+    // Ensure AI is properly updated
+    if (aiPlayer) {
+        if (aiPlayer.setDifficulty) {
+            aiPlayer.setDifficulty(newDifficulty);
+            console.log('AI difficulty updated to:', newDifficulty);
+        } else {
+            console.warn('AI setDifficulty method not available');
+        }
+    }
+    
+    // Update visual displays
     updateDifficultyDisplay(newDifficulty);
+    updateDifficultyIndicator(newDifficulty);
     
     // Show feedback message
     showDifficultyChangeMessage(newDifficulty, oldDifficulty);
@@ -109,10 +162,29 @@ function updateDifficultyDisplay(activeDifficulty) {
         
         if (buttonDifficulty === activeDifficulty) {
             button.classList.add('active');
+            console.log('Activated difficulty button:', buttonDifficulty);
         } else {
             button.classList.remove('active');
         }
     });
+}
+
+// Update the permanent difficulty indicator
+function updateDifficultyIndicator(difficulty) {
+    const indicator = document.getElementById('difficultyIndicator');
+    if (!indicator) return;
+    
+    // Remove old difficulty classes
+    indicator.classList.remove('novice', 'knight', 'grandmaster');
+    
+    // Add new difficulty class
+    indicator.classList.add(difficulty);
+    
+    // Update content
+    const difficultyInfo = getDifficultyDisplayInfo(difficulty);
+    indicator.innerHTML = `${difficultyInfo.icon} ${difficultyInfo.name}`;
+    
+    console.log('Difficulty indicator updated to:', difficulty);
 }
 
 // Show a brief message when difficulty changes
@@ -121,21 +193,17 @@ function showDifficultyChangeMessage(newDifficulty, oldDifficulty) {
     if (!statusElement) return;
     
     const originalText = statusElement.textContent;
-    const difficultyNames = {
-        'novice': '🛡️ Novice',
-        'knight': '⚔️ Knight', 
-        'grandmaster': '👑 Grandmaster'
-    };
+    const difficultyInfo = getDifficultyDisplayInfo(newDifficulty);
     
     // Show difficulty change message
-    statusElement.textContent = `Switched to ${difficultyNames[newDifficulty]} difficulty`;
+    statusElement.textContent = `Switched to ${difficultyInfo.icon} ${difficultyInfo.name} difficulty`;
     statusElement.style.color = getDifficultyColor(newDifficulty);
     
-    // Restore original message after 2 seconds
+    // Restore original message after 2.5 seconds
     setTimeout(() => {
         statusElement.textContent = originalText;
         statusElement.style.color = ''; // Reset to default color
-    }, 2000);
+    }, 2500);
 }
 
 // Get theme color for each difficulty
@@ -150,7 +218,23 @@ function getDifficultyColor(difficulty) {
 
 // Get current difficulty (for AI and other modules to use)
 function getCurrentDifficulty() {
+    console.log('Current difficulty requested:', gameState.difficulty);
     return gameState.difficulty;
+}
+
+// Force refresh difficulty across all systems (debugging helper)
+function refreshDifficulty() {
+    const currentDifficulty = gameState.difficulty;
+    console.log('Refreshing difficulty systems with:', currentDifficulty);
+    
+    // Re-apply to AI
+    if (aiPlayer && aiPlayer.setDifficulty) {
+        aiPlayer.setDifficulty(currentDifficulty);
+    }
+    
+    // Re-apply to UI
+    updateDifficultyDisplay(currentDifficulty);
+    updateDifficultyIndicator(currentDifficulty);
 }
 
 // Set up board square click interactions
@@ -235,8 +319,12 @@ function makePlayerMove(fromRow, fromCol, toRow, toCol) {
         } else if (gameEngine.isStalemate('black')) {
             gameEngine.gameOver = true;
         } else {
-            // Schedule AI move
+            // Schedule AI move - ensure difficulty is maintained
             setTimeout(() => {
+                // Double-check AI difficulty before move
+                if (aiPlayer && aiPlayer.setDifficulty) {
+                    aiPlayer.setDifficulty(gameState.difficulty);
+                }
                 aiPlayer.makeMove();
             }, 500);
         }
@@ -302,13 +390,18 @@ function newGame() {
         uiController.reset();
         aiPlayer.reset();
         
-        // Ensure AI knows current difficulty after reset
-        if (aiPlayer.setDifficulty) {
-            aiPlayer.setDifficulty(gameState.difficulty);
+        // IMPORTANT: Re-apply difficulty after reset
+        const currentDifficulty = gameState.difficulty;
+        if (aiPlayer && aiPlayer.setDifficulty) {
+            aiPlayer.setDifficulty(currentDifficulty);
+            console.log('Difficulty re-applied after new game:', currentDifficulty);
         }
         
-        // Reset game state
+        // Reset game state (but preserve difficulty)
         gameState.playerTurn = true;
+        
+        // Refresh difficulty display
+        refreshDifficulty();
         
         console.log('New game started with difficulty:', gameState.difficulty);
         
@@ -335,12 +428,15 @@ function undoMove() {
             gameEngine.lastAIMove = null;
             gameEngine.gameOver = false;
             
+            // Ensure difficulty is maintained after undo
+            refreshDifficulty();
+            
             // Update UI
             uiController.updateDisplay();
             uiController.updateMoveHistory();
             uiController.updateButtonStates();
             
-            console.log('Move undone');
+            console.log('Move undone, difficulty maintained:', gameState.difficulty);
         }
     } catch (error) {
         console.error('Error undoing move:', error);
@@ -382,6 +478,7 @@ window.showLastAIMove = showLastAIMove;
 // Export difficulty functions for other modules to use
 window.getCurrentDifficulty = getCurrentDifficulty;
 window.changeDifficulty = changeDifficulty;
+window.refreshDifficulty = refreshDifficulty; // For debugging
 
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
