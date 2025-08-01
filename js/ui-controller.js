@@ -187,7 +187,7 @@ class UIController {
         }
     }
     
-   showAIThinking(message = "AI is thinking...") {
+showAIThinking(message = "AI is thinking...") {
     this.statusElement.textContent = message;
 }
     
