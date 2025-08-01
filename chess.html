@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Standard Favicons -->
+    <link rel="icon" href="images/quill_favicon.ico" type="image/x-icon" />
+    <link rel="icon" href="images/quill_32x32.png" sizes="32x32" type="image/png" />
+    <link rel="icon" href="images/quill_64x64.png" sizes="64x64" type="image/png" />
+    <link rel="icon" href="images/quill_128x128.png" sizes="128x128" type="image/png" />
+    
+    <!-- Apple Touch Icon -->
+    <link rel="apple-touch-icon" href="images/quill_apple_touch_180x180.png" />
+    
+    <title>Chess - Sketchy Ponderings</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;700&family=Source+Sans+Pro:wght@300;400&family=Bangers&display=swap" rel="stylesheet">
+    
+    <!-- External CSS -->
+    <link rel="stylesheet" href="chess.css">
+</head>
+<body>
+    <div class="background"></div>
+    <div class="mist-overlay"></div>
+    <div class="particles" id="particles"></div>
+    
+    <!-- Game Overlay for dramatic text -->
+    <div class="game-overlay" id="gameOverlay">
+        <div class="overlay-text" id="overlayText"></div>
+    </div>
+
+    <div class="header">
+        <h1>♔ Chess Realms ♚</h1>
+        <p class="subtitle">Battle across the eternal board</p>
+    </div>
+
+    <div class="nav">
+        <!-- FIX #3: Mobile Menu Screen Reader Support -->
+        <button class="mobile-menu-button" id="mobileMenuButton" aria-label="Toggle navigation menu">☰ Menu</button>
+        <div class="nav-links" id="navLinks">
+            <a href="./index.html">Home</a>
+            <a href="./gallery.html">Gallery</a>
+            <a href="./games.html" class="creative current">Games</a>
+            <a href="./music.html" class="creative">Music</a>
+            <a href="./stories.html">Stories</a>
+            <a href="./about.html">About</a>
+            <a href="./contact.html">Contact</a>
+            <a href="https://watcheratthethreshold.github.io/subtle-sprits-cruxfade/" class="cruxfade-link" title="Enter Cruxfade">⟁ Cruxfade</a>
+        </div>
+    </div>
+
+    <!-- FIX #4: Semantic HTML Structure -->
+    <main>
+        <div class="game-container">
+            <div class="game-header">
+                <h2>Rook's Gambit</h2>
+                
+                
+                <!-- Music Controls -->
+                <div class="music-controls">
+                    <audio id="chessMusic" loop preload="auto">
+                        <source src="music/mysticChess.mp3" type="audio/mpeg">
+                        Your browser does not support the audio element.
+                    </audio>
+                    <button class="music-btn" id="musicToggle" onclick="toggleMusic()">
+                        🎵 Play Echoes of the Board
+                    </button>
+                    <div class="volume-control">
+                        <span>🔊</span>
+                        <input type="range" id="volumeSlider" min="0" max="100" value="30" onchange="setVolume(this.value)">
+                    </div>
+                </div>
+                <div class="game-status" id="gameStatus">White to move</div>
+            </div>
+            
+            
+            
+            <div class="chess-board-wrapper">
+                <div class="rank-labels">
+                    <div class="rank-label">8</div>
+                    <div class="rank-label">7</div>
+                    <div class="rank-label">6</div>
+                    <div class="rank-label">5</div>
+                    <div class="rank-label">4</div>
+                    <div class="rank-label">3</div>
+                    <div class="rank-label">2</div>
+                    <div class="rank-label">1</div>
+                </div>
+                <div class="board-and-files">
+                    <div class="chess-board-container">
+                        <div class="chess-board-mist"></div>
+                        <div class="chess-board" id="chessBoard"></div>
+                    </div>
+                    <div class="file-labels">
+                        <div class="file-label">a</div>
+                        <div class="file-label">b</div>
+                        <div class="file-label">c</div>
+                        <div class="file-label">d</div>
+                        <div class="file-label">e</div>
+                        <div class="file-label">f</div>
+                        <div class="file-label">g</div>
+                        <div class="file-label">h</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <button class="btn" onclick="newGame()">New Game</button>
+                <button class="btn" onclick="undoMove()">Undo Move</button>
+                <button class="btn" id="showLastMoveBtn" onclick="showLastAIMove()">Show Last Move</button>
+            </div>
+            
+            <div class="move-history" id="moveHistory">
+                <p><em>Move history will appear here...</em></p>
+            </div>
+            
+            <div class="game-instructions">
+                <h3>How to Play</h3>
+                <div class="instruction-grid">
+                    <div class="instruction">
+                        <span class="instruction-icon">👆</span>
+                        <span class="instruction-text">Click your piece to select it</span>
+                    </div>
+                    <div class="instruction">
+                        <span class="instruction-icon">✨</span>
+                        <span class="instruction-text">Valid moves glow green</span>
+                    </div>
+                    <div class="instruction">
+                        <span class="instruction-icon">🎯</span>
+                        <span class="instruction-text">Click destination to move</span>
+                    </div>
+                    <div class="instruction">
+                        <span class="instruction-icon">🤖</span>
+                        <span class="instruction-text">AI responds automatically</span>
+                    </div>
+                    <div class="instruction">
+                        <span class="instruction-icon">🔍</span>
+                        <span class="instruction-text">Use "Show Last Move" if you missed the AI's move</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <button class="back-to-top" id="scrollTop" title="Back to top">↑</button>
+
+    <footer>
+        © 2025 Sketchy Ponderings | In collaboration with <a href="../second-gaze/" style="text-decoration: none;">The Second Gaze</a> & <a href="../" style="text-decoration: none;">Fairweather</a> — quietly relentless.
+    </footer>
+
+    <!-- External JavaScript -->
+    <script src="chess.js"></script>
+</body>
+</html>
