@@ -68,12 +68,25 @@ class ChessGame {
         
         // Check if move would put own king in check
         const tempBoard = this.copyBoard();
+        const tempCastlingRights = JSON.parse(JSON.stringify(this.castlingRights));
+        
         this.board[toRow][toCol] = piece;
         this.board[fromRow][fromCol] = null;
         
+        // Handle castling rook movement for the check test
+        if (piece.type === 'king' && Math.abs(toCol - fromCol) === 2) {
+            const rookFromCol = toCol > fromCol ? 7 : 0;
+            const rookToCol = toCol > fromCol ? 5 : 3;
+            const rook = this.board[fromRow][rookFromCol];
+            this.board[fromRow][rookToCol] = rook;
+            this.board[fromRow][rookFromCol] = null;
+        }
+        
         const wouldBeInCheck = this.isInCheck(piece.color);
         
+        // Restore the board and castling rights
         this.board = tempBoard;
+        this.castlingRights = tempCastlingRights;
         
         return !wouldBeInCheck;
     }
@@ -97,10 +110,66 @@ class ChessGame {
             case 'knight':
                 return (absRowDiff === 2 && absColDiff === 1) || (absRowDiff === 1 && absColDiff === 2);
             case 'king':
-                return absRowDiff <= 1 && absColDiff <= 1;
+                // Normal king move (one square in any direction)
+                if (absRowDiff <= 1 && absColDiff <= 1) return true;
+                
+                // Castling (king moves 2 squares horizontally)
+                if (absRowDiff === 0 && absColDiff === 2) {
+                    return this.canCastle(piece.color, toCol > fromCol);
+                }
+                
+                return false;
             default:
                 return false;
         }
+    }
+    
+    canCastle(color, kingside) {
+        const row = color === 'white' ? 7 : 0;
+        const kingCol = 4;
+        const rookCol = kingside ? 7 : 0;
+        
+        // Check castling rights
+        if (!this.castlingRights[color][kingside ? 'kingside' : 'queenside']) {
+            return false;
+        }
+        
+        // Check if king is in check
+        if (this.isInCheck(color)) {
+            return false;
+        }
+        
+        // Check if path is clear
+        const startCol = Math.min(kingCol, rookCol);
+        const endCol = Math.max(kingCol, rookCol);
+        
+        for (let col = startCol + 1; col < endCol; col++) {
+            if (this.board[row][col] !== null) {
+                return false;
+            }
+        }
+        
+        // Check if king passes through or ends up in check
+        const kingDestCol = kingside ? 6 : 2;
+        const passThroughCol = kingside ? 5 : 3;
+        
+        // Test if king would be in check on the square it passes through
+        const tempBoard = this.copyBoard();
+        this.board[row][passThroughCol] = this.board[row][kingCol];
+        this.board[row][kingCol] = null;
+        
+        const passesThroughCheck = this.isInCheck(color);
+        
+        // Test if king would be in check on the destination square
+        this.board[row][kingDestCol] = this.board[row][passThroughCol];
+        this.board[row][passThroughCol] = null;
+        
+        const endsInCheck = this.isInCheck(color);
+        
+        // Restore board
+        this.board = tempBoard;
+        
+        return !passesThroughCheck && !endsInCheck;
     }
     
     isValidPawnMove(piece, fromRow, fromCol, toRow, toCol) {
@@ -153,9 +222,23 @@ class ChessGame {
             this.board[fromRow][toCol] = null;
         }
         
+        // Handle castling
+        if (piece.type === 'king' && Math.abs(toCol - fromCol) === 2) {
+            const rookFromCol = toCol > fromCol ? 7 : 0;
+            const rookToCol = toCol > fromCol ? 5 : 3;
+            const rook = this.board[fromRow][rookFromCol];
+            
+            // Move the rook
+            this.board[fromRow][rookToCol] = rook;
+            this.board[fromRow][rookFromCol] = null;
+        }
+        
         // Move piece
         this.board[toRow][toCol] = piece;
         this.board[fromRow][fromCol] = null;
+        
+        // Update castling rights
+        this.updateCastlingRights(piece, fromRow, fromCol, toRow, toCol);
         
         // Handle pawn promotion
         if (piece.type === 'pawn' && (toRow === 0 || toRow === 7)) {
@@ -208,6 +291,37 @@ class ChessGame {
             toCol,
             moveNotation
         };
+    }
+    
+    updateCastlingRights(piece, fromRow, fromCol, toRow, toCol) {
+        // If king moves, lose all castling rights for that color
+        if (piece.type === 'king') {
+            this.castlingRights[piece.color].kingside = false;
+            this.castlingRights[piece.color].queenside = false;
+        }
+        
+        // If rook moves from starting position, lose castling right for that side
+        if (piece.type === 'rook') {
+            if (piece.color === 'white' && fromRow === 7) {
+                if (fromCol === 0) this.castlingRights.white.queenside = false;
+                if (fromCol === 7) this.castlingRights.white.kingside = false;
+            } else if (piece.color === 'black' && fromRow === 0) {
+                if (fromCol === 0) this.castlingRights.black.queenside = false;
+                if (fromCol === 7) this.castlingRights.black.kingside = false;
+            }
+        }
+        
+        // If rook is captured, lose castling right for that side
+        const capturedPiece = this.board[toRow][toCol];
+        if (capturedPiece && capturedPiece.type === 'rook') {
+            if (capturedPiece.color === 'white' && toRow === 7) {
+                if (toCol === 0) this.castlingRights.white.queenside = false;
+                if (toCol === 7) this.castlingRights.white.kingside = false;
+            } else if (capturedPiece.color === 'black' && toRow === 0) {
+                if (toCol === 0) this.castlingRights.black.queenside = false;
+                if (toCol === 7) this.castlingRights.black.kingside = false;
+            }
+        }
     }
     
     isInCheck(color) {
