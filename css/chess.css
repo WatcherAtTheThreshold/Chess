@@ -1481,3 +1481,160 @@ footer {
         margin-bottom: 0.5rem;
     }
 }
+
+/* Enhanced Active Difficulty Styling - ADD to chess.css */
+
+/* Make active difficulty MUCH more prominent */
+.difficulty-btn.active {
+    background: rgba(138, 43, 226, 0.8) !important; /* Much stronger background */
+    border: 2px solid rgba(138, 43, 226, 1) !important; /* Thicker border */
+    box-shadow: 
+        0 0 25px rgba(138, 43, 226, 0.8),
+        0 0 50px rgba(138, 43, 226, 0.6),
+        inset 0 0 20px rgba(255, 255, 255, 0.2) !important; /* Inner glow */
+    color: #fff !important;
+    font-weight: 700 !important; /* Bolder text */
+    transform: translateY(-3px) scale(1.05) !important; /* Larger and raised */
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.8) !important; /* Text glow */
+}
+
+.difficulty-btn.active:hover {
+    background: rgba(138, 43, 226, 0.9) !important;
+    box-shadow: 
+        0 5px 20px rgba(0, 0, 0, 0.4), 
+        0 0 35px rgba(138, 43, 226, 1),
+        0 0 70px rgba(138, 43, 226, 0.8),
+        inset 0 0 25px rgba(255, 255, 255, 0.3) !important;
+    transform: translateY(-3px) scale(1.05) !important;
+}
+
+/* Enhanced difficulty-specific active styling */
+.difficulty-btn[data-difficulty="novice"].active {
+    background: rgba(76, 175, 80, 0.8) !important;
+    border: 2px solid rgba(76, 175, 80, 1) !important;
+    box-shadow: 
+        0 0 25px rgba(76, 175, 80, 0.8),
+        0 0 50px rgba(76, 175, 80, 0.6),
+        inset 0 0 20px rgba(255, 255, 255, 0.2) !important;
+}
+
+.difficulty-btn[data-difficulty="novice"].active:hover {
+    background: rgba(76, 175, 80, 0.9) !important;
+    box-shadow: 
+        0 5px 20px rgba(0, 0, 0, 0.4), 
+        0 0 35px rgba(76, 175, 80, 1),
+        0 0 70px rgba(76, 175, 80, 0.8),
+        inset 0 0 25px rgba(255, 255, 255, 0.3) !important;
+}
+
+.difficulty-btn[data-difficulty="knight"].active {
+    background: rgba(255, 152, 0, 0.8) !important;
+    border: 2px solid rgba(255, 152, 0, 1) !important;
+    box-shadow: 
+        0 0 25px rgba(255, 152, 0, 0.8),
+        0 0 50px rgba(255, 152, 0, 0.6),
+        inset 0 0 20px rgba(255, 255, 255, 0.2) !important;
+}
+
+.difficulty-btn[data-difficulty="knight"].active:hover {
+    background: rgba(255, 152, 0, 0.9) !important;
+    box-shadow: 
+        0 5px 20px rgba(0, 0, 0, 0.4), 
+        0 0 35px rgba(255, 152, 0, 1),
+        0 0 70px rgba(255, 152, 0, 0.8),
+        inset 0 0 25px rgba(255, 255, 255, 0.3) !important;
+}
+
+.difficulty-btn[data-difficulty="grandmaster"].active {
+    background: rgba(233, 30, 99, 0.8) !important;
+    border: 2px solid rgba(233, 30, 99, 1) !important;
+    box-shadow: 
+        0 0 25px rgba(233, 30, 99, 0.8),
+        0 0 50px rgba(233, 30, 99, 0.6),
+        inset 0 0 20px rgba(255, 255, 255, 0.2) !important;
+}
+
+.difficulty-btn[data-difficulty="grandmaster"].active:hover {
+    background: rgba(233, 30, 99, 0.9) !important;
+    box-shadow: 
+        0 5px 20px rgba(0, 0, 0, 0.4), 
+        0 0 35px rgba(233, 30, 99, 1),
+        0 0 70px rgba(233, 30, 99, 0.8),
+        inset 0 0 25px rgba(255, 255, 255, 0.3) !important;
+}
+
+/* Add visual indicator next to game status */
+.game-status-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.difficulty-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.8rem;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 15px;
+    backdrop-filter: blur(10px);
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-shadow: 0 0 8px rgba(138, 43, 226, 0.4);
+    transition: all 0.3s ease;
+}
+
+.difficulty-indicator.novice {
+    border-color: rgba(76, 175, 80, 0.6);
+    background: rgba(76, 175, 80, 0.2);
+    color: rgba(76, 175, 80, 1);
+    box-shadow: 0 0 15px rgba(76, 175, 80, 0.3);
+}
+
+.difficulty-indicator.knight {
+    border-color: rgba(255, 152, 0, 0.6);
+    background: rgba(255, 152, 0, 0.2);
+    color: rgba(255, 152, 0, 1);
+    box-shadow: 0 0 15px rgba(255, 152, 0, 0.3);
+}
+
+.difficulty-indicator.grandmaster {
+    border-color: rgba(233, 30, 99, 0.6);
+    background: rgba(233, 30, 99, 0.2);
+    color: rgba(233, 30, 99, 1);
+    box-shadow: 0 0 15px rgba(233, 30, 99, 0.3);
+}
+
+/* Animate difficulty changes */
+@keyframes difficultyChange {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+.difficulty-btn.active {
+    animation: difficultyChange 0.3s ease-out;
+}
+
+/* Mobile responsiveness for new elements */
+@media (max-width: 768px) {
+    .game-status-container {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .difficulty-indicator {
+        font-size: 0.8rem;
+        padding: 0.3rem 0.6rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .difficulty-indicator {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+    }
+}
