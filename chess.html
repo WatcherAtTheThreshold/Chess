@@ -54,11 +54,11 @@
         <div class="game-container">
             <!-- Replace the existing music-controls section in game-header with this: -->
 
-            <div class="game-header">
-             <h2>Rook's Gambit</h2>
+           <div class="game-header">
+    <h2>Rook's Gambit</h2>
     
-        <!-- Game Settings Container - Side by Side -->
-         <div class="game-settings-container">
+    <!-- Game Settings Container - Side by Side -->
+    <div class="game-settings-container">
         <!-- Difficulty Controls -->
         <div class="difficulty-controls">
             <h4>⚔️ Challenge Level</h4>
@@ -74,8 +74,26 @@
                 </button>
             </div>
         </div>
-                <div class="game-status" id="gameStatus">White to move</div>
+        
+        <!-- Music Controls -->
+        <div class="music-controls">
+            <h4>🎵 Battle Music</h4>
+            <audio id="chessMusic" loop preload="auto">
+                <source src="assets/sounds/mysticChess.mp3" type="audio/mpeg">
+                Your browser does not support the audio element.
+            </audio>
+            <button class="music-btn" id="musicToggle">
+                🎵 Play Echoes of the Board
+            </button>
+            <div class="volume-control">
+                <span>🔊</span>
+                <input type="range" id="volumeSlider" min="0" max="100" value="30">
             </div>
+        </div>
+    </div>
+    
+    <div class="game-status" id="gameStatus">White to move</div>
+</div>
             
             
             
