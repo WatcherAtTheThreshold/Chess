@@ -1279,4 +1279,248 @@ footer {
     }
 }
 
-/* Note: CSS was previously cut off - this completes the mobile responsive section */
+<!-- HTML CHANGES for chess.html -->
+<!-- Replace the existing music-controls section in game-header with this: -->
+
+<div class="game-header">
+    <h2>Rook's Gambit</h2>
+    
+    <!-- Game Settings Container - Side by Side -->
+    <div class="game-settings-container">
+        <!-- Difficulty Controls -->
+        <div class="difficulty-controls">
+            <h4>⚔️ Challenge Level</h4>
+            <div class="difficulty-selector">
+                <button class="difficulty-btn active" data-difficulty="novice" id="noviceDifficulty">
+                    🛡️ Novice
+                </button>
+                <button class="difficulty-btn" data-difficulty="knight" id="knightDifficulty">
+                    ⚔️ Knight
+                </button>
+                <button class="difficulty-btn" data-difficulty="grandmaster" id="grandmasterDifficulty">
+                    👑 Grandmaster
+                </button>
+            </div>
+        </div>
+        
+        <!-- Music Controls -->
+        <div class="music-controls">
+            <h4>🎵 Battle Music</h4>
+            <audio id="chessMusic" loop preload="auto">
+                <source src="assets/sounds/mysticChess.mp3" type="audio/mpeg">
+                Your browser does not support the audio element.
+            </audio>
+            <button class="music-btn" id="musicToggle">
+                🎵 Play Echoes of the Board
+            </button>
+            <div class="volume-control">
+                <span>🔊</span>
+                <input type="range" id="volumeSlider" min="0" max="100" value="30">
+            </div>
+        </div>
+    </div>
+    
+    <div class="game-status" id="gameStatus">White to move</div>
+</div>
+
+<!-- CSS ADDITIONS - Add to chess.css -->
+<style>
+/* Game Settings Container - Side by side layout */
+.game-settings-container {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+/* Update existing music-controls to be half width */
+.music-controls {
+    flex: 1;
+    min-width: 300px;
+    max-width: 400px;
+    margin-top: 0; /* Remove existing margin since container handles it */
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    backdrop-filter: blur(10px);
+}
+
+.music-controls h4 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 0.75rem;
+    text-align: center;
+    text-shadow: 0 0 8px rgba(138, 43, 226, 0.4);
+}
+
+/* Difficulty Controls - Matching style */
+.difficulty-controls {
+    flex: 1;
+    min-width: 300px;
+    max-width: 400px;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    backdrop-filter: blur(10px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.difficulty-controls h4 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 0.75rem;
+    text-align: center;
+    text-shadow: 0 0 8px rgba(138, 43, 226, 0.4);
+}
+
+.difficulty-selector {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+}
+
+.difficulty-btn {
+    background: rgba(138, 43, 226, 0.2);
+    color: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(138, 43, 226, 0.4);
+    padding: 0.6rem 1rem;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    position: relative;
+    overflow: hidden;
+    font-family: 'Source Sans Pro', sans-serif;
+    font-weight: 500;
+    text-align: center;
+}
+
+.difficulty-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 0.3s;
+}
+
+.difficulty-btn:hover::before {
+    left: 100%;
+}
+
+.difficulty-btn:hover {
+    background: rgba(138, 43, 226, 0.3);
+    border-color: rgba(138, 43, 226, 0.6);
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2), 0 0 15px rgba(138, 43, 226, 0.3);
+}
+
+/* Active difficulty styling */
+.difficulty-btn.active {
+    background: rgba(138, 43, 226, 0.5);
+    border-color: rgba(138, 43, 226, 0.8);
+    box-shadow: 0 0 15px rgba(138, 43, 226, 0.4);
+    color: #fff;
+    font-weight: 600;
+    transform: translateY(-1px);
+}
+
+.difficulty-btn.active:hover {
+    background: rgba(138, 43, 226, 0.6);
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.3), 0 0 20px rgba(138, 43, 226, 0.5);
+}
+
+/* Difficulty-specific styling */
+.difficulty-btn[data-difficulty="novice"] {
+    border-color: rgba(76, 175, 80, 0.4);
+    background: rgba(76, 175, 80, 0.2);
+}
+
+.difficulty-btn[data-difficulty="novice"]:hover,
+.difficulty-btn[data-difficulty="novice"].active {
+    border-color: rgba(76, 175, 80, 0.8);
+    background: rgba(76, 175, 80, 0.4);
+    box-shadow: 0 0 15px rgba(76, 175, 80, 0.3);
+}
+
+.difficulty-btn[data-difficulty="knight"] {
+    border-color: rgba(255, 152, 0, 0.4);
+    background: rgba(255, 152, 0, 0.2);
+}
+
+.difficulty-btn[data-difficulty="knight"]:hover,
+.difficulty-btn[data-difficulty="knight"].active {
+    border-color: rgba(255, 152, 0, 0.8);
+    background: rgba(255, 152, 0, 0.4);
+    box-shadow: 0 0 15px rgba(255, 152, 0, 0.3);
+}
+
+.difficulty-btn[data-difficulty="grandmaster"] {
+    border-color: rgba(233, 30, 99, 0.4);
+    background: rgba(233, 30, 99, 0.2);
+}
+
+.difficulty-btn[data-difficulty="grandmaster"]:hover,
+.difficulty-btn[data-difficulty="grandmaster"].active {
+    border-color: rgba(233, 30, 99, 0.8);
+    background: rgba(233, 30, 99, 0.4);
+    box-shadow: 0 0 15px rgba(233, 30, 99, 0.3);
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .game-settings-container {
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .difficulty-controls,
+    .music-controls {
+        max-width: 100%;
+        min-width: auto;
+        width: 100%;
+    }
+    
+    .difficulty-selector {
+        flex-direction: row;
+        justify-content: space-between;
+        gap: 0.3rem;
+    }
+    
+    .difficulty-btn {
+        flex: 1;
+        padding: 0.5rem 0.3rem;
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .difficulty-selector {
+        flex-direction: column;
+        gap: 0.4rem;
+    }
+    
+    .difficulty-btn {
+        padding: 0.5rem 0.8rem;
+        font-size: 0.85rem;
+    }
+    
+    .difficulty-controls h4,
+    .music-controls h4 {
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+    }
+}
+
