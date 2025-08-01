@@ -1279,52 +1279,6 @@ footer {
     }
 }
 
-<!-- HTML CHANGES for chess.html -->
-<!-- Replace the existing music-controls section in game-header with this: -->
-
-<div class="game-header">
-    <h2>Rook's Gambit</h2>
-    
-    <!-- Game Settings Container - Side by Side -->
-    <div class="game-settings-container">
-        <!-- Difficulty Controls -->
-        <div class="difficulty-controls">
-            <h4>⚔️ Challenge Level</h4>
-            <div class="difficulty-selector">
-                <button class="difficulty-btn active" data-difficulty="novice" id="noviceDifficulty">
-                    🛡️ Novice
-                </button>
-                <button class="difficulty-btn" data-difficulty="knight" id="knightDifficulty">
-                    ⚔️ Knight
-                </button>
-                <button class="difficulty-btn" data-difficulty="grandmaster" id="grandmasterDifficulty">
-                    👑 Grandmaster
-                </button>
-            </div>
-        </div>
-        
-        <!-- Music Controls -->
-        <div class="music-controls">
-            <h4>🎵 Battle Music</h4>
-            <audio id="chessMusic" loop preload="auto">
-                <source src="assets/sounds/mysticChess.mp3" type="audio/mpeg">
-                Your browser does not support the audio element.
-            </audio>
-            <button class="music-btn" id="musicToggle">
-                🎵 Play Echoes of the Board
-            </button>
-            <div class="volume-control">
-                <span>🔊</span>
-                <input type="range" id="volumeSlider" min="0" max="100" value="30">
-            </div>
-        </div>
-    </div>
-    
-    <div class="game-status" id="gameStatus">White to move</div>
-</div>
-
-<!-- CSS ADDITIONS - Add to chess.css -->
-<style>
 /* Game Settings Container - Side by side layout */
 .game-settings-container {
     display: flex;
@@ -1345,6 +1299,10 @@ footer {
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 10px;
     backdrop-filter: blur(10px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
 }
 
 .music-controls h4 {
@@ -1523,4 +1481,3 @@ footer {
         margin-bottom: 0.5rem;
     }
 }
-
