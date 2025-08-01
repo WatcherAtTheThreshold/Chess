@@ -187,9 +187,9 @@ class UIController {
         }
     }
     
-    showAIThinking() {
-        this.statusElement.textContent = "AI is thinking...";
-    }
+   showAIThinking(message = "AI is thinking...") {
+    this.statusElement.textContent = message;
+}
     
     // Initialize event listeners for UI elements
     initializeEventListeners() {
