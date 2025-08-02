@@ -9,6 +9,13 @@ class UIController {
         this.historyElement = document.getElementById('moveHistory');
         this.showLastMoveBtn = document.getElementById('showLastMoveBtn');
         
+        // Track current AI move highlighting for smart persistence
+        this.currentAIHighlight = {
+            fromSquare: null,
+            toSquare: null,
+            active: false
+        };
+        
         this.initializeEventListeners();
     }
     
@@ -34,7 +41,23 @@ class UIController {
             const piece = this.gameEngine.board[row][col];
             
             square.innerHTML = '';
+            
+            // Preserve AI highlighting and other special highlights when updating display
+            const wasAIFrom = square.classList.contains('ai-from');
+            const wasAITo = square.classList.contains('ai-to');
+            const wasSelected = square.classList.contains('selected');
+            const wasValidMove = square.classList.contains('valid-move');
+            const wasInCheck = square.classList.contains('check');
+            
+            // Reset base square styling
             square.className = `square ${(row + col) % 2 === 0 ? 'light' : 'dark'}`;
+            
+            // Restore special highlighting states
+            if (wasAIFrom) square.classList.add('ai-from');
+            if (wasAITo) square.classList.add('ai-to');
+            if (wasSelected) square.classList.add('selected');
+            if (wasValidMove) square.classList.add('valid-move');
+            if (wasInCheck) square.classList.add('check');
             
             if (piece) {
                 const pieceElement = document.createElement('span');
@@ -75,8 +98,31 @@ class UIController {
     
     clearHighlights() {
         document.querySelectorAll('.square').forEach(sq => {
-            sq.classList.remove('selected', 'valid-move', 'check', 'ai-from', 'ai-to');
+            sq.classList.remove('selected', 'valid-move', 'check');
+            // NOTE: We deliberately don't clear 'ai-from' and 'ai-to' here
+            // Those are managed separately by the AI highlighting system
         });
+    }
+    
+    // Clear ONLY AI move highlights (for internal use)
+    clearAIHighlights() {
+        if (this.currentAIHighlight.active) {
+            if (this.currentAIHighlight.fromSquare) {
+                this.currentAIHighlight.fromSquare.classList.remove('ai-from');
+            }
+            if (this.currentAIHighlight.toSquare) {
+                this.currentAIHighlight.toSquare.classList.remove('ai-to');
+            }
+            
+            // Reset tracking
+            this.currentAIHighlight = {
+                fromSquare: null,
+                toSquare: null,
+                active: false
+            };
+            
+            console.log('UIController: AI highlights cleared');
+        }
     }
     
     highlightSquare(row, col, className) {
@@ -97,35 +143,78 @@ class UIController {
         }
     }
     
+    // ENHANCED: Smart AI move highlighting that persists until next AI move
     highlightAIMove(fromRow, fromCol, toRow, toCol) {
-        // Clear any existing AI highlights
-        document.querySelectorAll('.square').forEach(sq => {
-            sq.classList.remove('ai-from', 'ai-to');
-        });
+        console.log('UIController: Highlighting new AI move from', fromRow, fromCol, 'to', toRow, toCol);
         
+        // Clear any existing AI highlights first
+        this.clearAIHighlights();
+        
+        // Get the new squares to highlight
         const fromSquare = document.querySelector(`[data-row="${fromRow}"][data-col="${fromCol}"]`);
         const toSquare = document.querySelector(`[data-row="${toRow}"][data-col="${toCol}"]`);
         
-        if (fromSquare) fromSquare.classList.add('ai-from');
-        if (toSquare) toSquare.classList.add('ai-to');
-        
-        // Remove highlights after animation
-        setTimeout(() => {
-            if (fromSquare) fromSquare.classList.remove('ai-from');
-            if (toSquare) toSquare.classList.remove('ai-to');
-        }, 2000);
+        if (fromSquare && toSquare) {
+            // Apply the new AI highlighting
+            fromSquare.classList.add('ai-from');
+            toSquare.classList.add('ai-to');
+            
+            // Track the current highlights for future clearing
+            this.currentAIHighlight = {
+                fromSquare: fromSquare,
+                toSquare: toSquare,
+                active: true
+            };
+            
+            console.log('UIController: AI move highlighted persistently (will clear on next AI move)');
+            
+            // Optional: Add a subtle animation pulse on initial highlight
+            fromSquare.style.animation = 'aiMoveHighlight 1s ease-out';
+            toSquare.style.animation = 'aiMoveHighlight 1s ease-out';
+            
+            // Remove the animation after it completes to avoid interfering with CSS
+            setTimeout(() => {
+                if (fromSquare.style) fromSquare.style.animation = '';
+                if (toSquare.style) toSquare.style.animation = '';
+            }, 1000);
+        } else {
+            console.warn('UIController: Could not find squares for AI move highlighting');
+        }
     }
     
     showLastAIMove() {
-        if (!this.gameEngine.lastAIMove) return;
+        if (!this.gameEngine.lastAIMove) {
+            console.log('UIController: No last AI move to show');
+            return;
+        }
         
-        this.clearHighlights();
+        console.log('UIController: Showing last AI move');
+        
+        // Re-highlight the last AI move (this will clear any existing highlights first)
         this.highlightAIMove(
             this.gameEngine.lastAIMove.from.row,
             this.gameEngine.lastAIMove.from.col,
             this.gameEngine.lastAIMove.to.row,
             this.gameEngine.lastAIMove.to.col
         );
+        
+        // Add a brief flash effect to draw attention
+        if (this.currentAIHighlight.active) {
+            const squares = [this.currentAIHighlight.fromSquare, this.currentAIHighlight.toSquare];
+            squares.forEach(square => {
+                if (square) {
+                    square.style.transform = 'scale(1.1)';
+                    square.style.transition = 'transform 0.3s ease';
+                    
+                    setTimeout(() => {
+                        if (square.style) {
+                            square.style.transform = '';
+                            square.style.transition = '';
+                        }
+                    }, 600);
+                }
+            });
+        }
     }
     
     updateMoveHistory() {
@@ -187,9 +276,9 @@ class UIController {
         }
     }
     
-showAIThinking(message = "AI is thinking...") {
-    this.statusElement.textContent = message;
-}
+    showAIThinking(message = "AI is thinking...") {
+        this.statusElement.textContent = message;
+    }
     
     // Initialize event listeners for UI elements
     initializeEventListeners() {
@@ -273,14 +362,17 @@ showAIThinking(message = "AI is thinking...") {
         this.showBeginGameOverlay();
     }
     
-    // Reset UI for new game
+    // ENHANCED: Reset UI for new game - includes clearing AI highlights
     reset() {
         this.hideOverlay();
         this.clearHighlights();
+        this.clearAIHighlights(); // Important: Clear persistent AI highlights on new game
         this.updateDisplay();
         this.updateMoveHistory();
         this.updateButtonStates();
         this.showBeginGameOverlay();
+        
+        console.log('UIController: Full reset completed including AI highlights');
     }
 }
 
