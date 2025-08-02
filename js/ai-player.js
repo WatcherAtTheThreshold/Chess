@@ -85,7 +85,7 @@ class AIPlayer {
                 bestMove.to.col
             );
             
-            // Trigger UI updates and animations
+            // ENHANCED: Handle move result with smart highlighting
             this.handleMoveResult(moveResult, bestMove);
             
             // Check for game over
@@ -461,15 +461,19 @@ class AIPlayer {
         return false;
     }
     
+    // ENHANCED: Smart move result handling with persistent highlighting
     handleMoveResult(moveResult, bestMove) {
-        // Trigger particle effects through UI controller
+        console.log('AIPlayer: Handling move result with smart highlighting');
+        
+        // Trigger particle effects first
         if (moveResult.capturedPiece) {
             this.triggerCaptureEffect(bestMove.to.row, bestMove.to.col);
         } else {
             this.triggerMoveEffect(bestMove.to.row, bestMove.to.col);
         }
         
-        // Highlight the AI's move
+        // ENHANCED: Apply persistent AI move highlighting
+        // This will automatically clear any previous AI highlights and set new ones
         this.uiController.highlightAIMove(
             bestMove.from.row,
             bestMove.from.col,
@@ -483,6 +487,8 @@ class AIPlayer {
                 this.triggerMoveEffect(bestMove.to.row, bestMove.to.col);
             }, 200);
         }
+        
+        console.log('AIPlayer: Move result handled with persistent highlighting until next AI move');
     }
     
     triggerMoveEffect(row, col) {
@@ -501,6 +507,7 @@ class AIPlayer {
     reset() {
         this.isThinking = false;
         // Keep difficulty setting through resets
+        console.log('AIPlayer: Reset completed, difficulty preserved:', this.difficulty);
     }
 }
 
