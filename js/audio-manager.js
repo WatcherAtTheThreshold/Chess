@@ -187,10 +187,10 @@ class AudioManager {
         
         if (this.musicPlaying) {
             console.log('AudioManager: Starting fade out...');
-            this.fadeOut(1200); // Smooth 1.2 second fade out
+            this.fadeOut(2000); // Smooth 2 second fade out
         } else {
             console.log('AudioManager: Starting fade in...');
-            this.fadeInAndPlay(1200); // Smooth 1.2 second fade in
+            this.fadeInAndPlay(2000); // Smooth 2 second fade in
         }
     }
     
