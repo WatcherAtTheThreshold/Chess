@@ -443,7 +443,6 @@ h1 {
     font-size: 14px;
     text-shadow: 0 0 10px rgba(0, 0, 0, 0.8), 0 0 5px rgba(138, 43, 226, 0.6);
     width: 20px;
-    backdrop-filter: blur(2px);
 }
 
 .board-and-files {
@@ -470,7 +469,6 @@ h1 {
     font-size: 14px;
     text-shadow: 0 0 10px rgba(0, 0, 0, 0.8), 0 0 5px rgba(138, 43, 226, 0.6);
     height: 20px;
-    backdrop-filter: blur(2px);
 }
 .chess-board-container {
     position: relative;
