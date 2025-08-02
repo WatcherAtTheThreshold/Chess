@@ -42,7 +42,7 @@ class UIController {
             
             square.innerHTML = '';
             
-            // Preserve AI highlighting and other special highlights when updating display
+            // Preserve highlighting states, but be smart about AI highlights
             const wasAIFrom = square.classList.contains('ai-from');
             const wasAITo = square.classList.contains('ai-to');
             const wasSelected = square.classList.contains('selected');
@@ -52,9 +52,16 @@ class UIController {
             // Reset base square styling
             square.className = `square ${(row + col) % 2 === 0 ? 'light' : 'dark'}`;
             
+            // Only restore AI highlights if there's actually a current AI move to highlight
+            // This prevents restoring highlights after they've been intentionally cleared (e.g., during undo)
+            const shouldRestoreAIHighlights = this.gameEngine.lastAIMove && 
+                                            this.currentAIHighlight.active &&
+                                            ((wasAIFrom && row === this.gameEngine.lastAIMove.from.row && col === this.gameEngine.lastAIMove.from.col) ||
+                                             (wasAITo && row === this.gameEngine.lastAIMove.to.row && col === this.gameEngine.lastAIMove.to.col));
+            
             // Restore special highlighting states
-            if (wasAIFrom) square.classList.add('ai-from');
-            if (wasAITo) square.classList.add('ai-to');
+            if (shouldRestoreAIHighlights && wasAIFrom) square.classList.add('ai-from');
+            if (shouldRestoreAIHighlights && wasAITo) square.classList.add('ai-to');
             if (wasSelected) square.classList.add('selected');
             if (wasValidMove) square.classList.add('valid-move');
             if (wasInCheck) square.classList.add('check');
