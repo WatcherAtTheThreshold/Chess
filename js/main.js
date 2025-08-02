@@ -419,7 +419,7 @@ function newGame() {
         
         // Reset all modules
         gameEngine.reset();
-        uiController.reset();
+        uiController.reset(); // This now includes clearing AI highlights
         aiPlayer.reset();
         
         // IMPORTANT: Re-apply difficulty after reset
