@@ -424,7 +424,7 @@ h1 {
 
 .rank-labels {
     position: absolute;
-    left: 10px;
+    left: 2px;
     top: 0;
     height: 100%;
     display: flex;
@@ -451,7 +451,7 @@ h1 {
 
 .file-labels {
     position: absolute;
-    bottom: 10px;
+    bottom: 2px;
     left: 0;
     width: 100%;
     display: flex;
