@@ -443,39 +443,85 @@ function newGame() {
     }
 }
 
+// ENHANCED: Post-game undo functionality - allow unlimited undos until new game
 function undoMove() {
     try {
-        if (gameEngine.moveHistory.length >= 2) {
-            // Clear any pending status messages
-            if (statusMessageTimeout) {
-                clearTimeout(statusMessageTimeout);
-                statusMessageTimeout = null;
-            }
-            
-            // Undo last two moves (player + AI)
-            for (let i = 0; i < 2; i++) {
-                const lastMove = gameEngine.moveHistory.pop();
-                if (lastMove) {
-                    gameEngine.board[lastMove.from.row][lastMove.from.col] = lastMove.piece;
-                    gameEngine.board[lastMove.to.row][lastMove.to.col] = lastMove.captured;
-                    gameEngine.currentPlayer = gameEngine.currentPlayer === 'white' ? 'black' : 'white';
-                }
-            }
-            
-            // Clear the last AI move since we undid it
-            gameEngine.lastAIMove = null;
-            gameEngine.gameOver = false;
-            
-            // Ensure difficulty is maintained after undo
-            refreshDifficulty();
-            
-            // Update UI
-            uiController.updateDisplay();
-            uiController.updateMoveHistory();
-            uiController.updateButtonStates();
-            
-            console.log('Move undone, difficulty maintained:', gameState.difficulty);
+        // Check if there are moves to undo (need at least 2 for player + AI move pair)
+        if (gameEngine.moveHistory.length < 2) {
+            console.log('Not enough moves to undo (need at least 2)');
+            return;
         }
+        
+        // Clear any pending status messages
+        if (statusMessageTimeout) {
+            clearTimeout(statusMessageTimeout);
+            statusMessageTimeout = null;
+        }
+        
+        console.log('Undoing move - Current game over state:', gameEngine.gameOver);
+        console.log('Move history length before undo:', gameEngine.moveHistory.length);
+        
+        // Store the current game over state
+        const wasGameOver = gameEngine.gameOver;
+        
+        // Undo last two moves (player + AI) to return to player's turn
+        const undoneAIMove = gameEngine.moveHistory.pop(); // AI's move
+        const undonePlayerMove = gameEngine.moveHistory.pop(); // Player's move
+        
+        console.log('Undoing AI move:', undoneAIMove?.notation);
+        console.log('Undoing player move:', undonePlayerMove?.notation);
+        
+        // Restore board state for AI move
+        if (undoneAIMove) {
+            gameEngine.board[undoneAIMove.from.row][undoneAIMove.from.col] = undoneAIMove.piece;
+            gameEngine.board[undoneAIMove.to.row][undoneAIMove.to.col] = undoneAIMove.captured;
+        }
+        
+        // Restore board state for player move  
+        if (undonePlayerMove) {
+            gameEngine.board[undonePlayerMove.from.row][undonePlayerMove.from.col] = undonePlayerMove.piece;
+            gameEngine.board[undonePlayerMove.to.row][undonePlayerMove.to.col] = undonePlayerMove.captured;
+        }
+        
+        // Reset game state
+        gameEngine.currentPlayer = 'white'; // Always return to player's turn
+        gameEngine.selectedSquare = null;
+        gameEngine.gameOver = false; // IMPORTANT: Allow game to continue even if it was over
+        gameEngine.lastAIMove = null; // Clear last AI move highlighting
+        
+        // If the game was over before undo, show a helpful message
+        if (wasGameOver) {
+            console.log('Game was over, now allowing continuation after undo');
+            
+            // Show a brief message about the undo
+            const statusElement = document.getElementById('gameStatus');
+            if (statusElement) {
+                statusElement.textContent = 'Game continued - your turn!';
+                statusElement.style.color = 'rgba(76, 175, 80, 1)'; // Green color
+                
+                // Reset to normal status after 3 seconds
+                setTimeout(() => {
+                    if (uiController && uiController.updateGameStatus) {
+                        uiController.updateGameStatus();
+                    }
+                    statusElement.style.color = '';
+                }, 3000);
+            }
+        }
+        
+        // Ensure difficulty is maintained after undo
+        refreshDifficulty();
+        
+        // Update UI to reflect the undone state
+        uiController.updateDisplay();
+        uiController.updateMoveHistory();
+        uiController.updateButtonStates();
+        
+        console.log('Move undone successfully, difficulty maintained:', gameState.difficulty);
+        console.log('New game over state:', gameEngine.gameOver);
+        console.log('Current player:', gameEngine.currentPlayer);
+        console.log('Move history length after undo:', gameEngine.moveHistory.length);
+        
     } catch (error) {
         console.error('Error undoing move:', error);
         handleGameError(error);
