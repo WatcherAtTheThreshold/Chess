@@ -11,7 +11,8 @@
       background-color: #1e1e1e;
       color: #f0f0f0;
       font-family: Georgia, serif;
-      height: 100svh;
+      height: 100svh; /* Lock to small viewport height */
+      overflow: hidden; /* Prevent scrollbars */
     }
     body {
       display: flex;
@@ -20,7 +21,7 @@
     }
     video {
       max-width: 100%;
-      max-height: 100svh;
+      max-height: 100%;
       height: auto;
       object-fit: contain;
       border: 2px solid #f0f0f0;
@@ -40,7 +41,7 @@
 
     document.addEventListener('keydown', (event) => {
       if (event.code === 'Space' || event.code === 'Enter') {
-        event.preventDefault(); // Prevent page scrolling on space
+        event.preventDefault(); // Prevent scrolling
         if (video.paused) {
           video.play();
         } else {
