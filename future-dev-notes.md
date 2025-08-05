@@ -194,29 +194,28 @@ const openingBook = {
 - ⚠️ **Older Browsers:** May need polyfills for ES6 features (Object.assign, arrow functions)
 
 ### **Feedback from Players on itch.io**
-- ⚠️ **Older Browsers:** May need polyfills for ES6 features (Object.assign, arrow functions)
-- On Knight difficulty a pawn just jumped over the bishop at early game. Full list of moves bellow:
+- ⚠️ On Knight difficulty a pawn just jumped over the bishop at early game. Full list of moves bellow:
 
 
-1.White Pawn moves to e4
+-  1.White Pawn moves to e4
 
-1.Black Pawn moves to d5
+-  1.Black Pawn moves to d5
 
-2.White Knight moves to c3
+-  2.White Knight moves to c3
 
-2.Black Pawn moves to e4 and takes White Pawn
+-  2.Black Pawn moves to e4 and takes White Pawn
 
-3.White Knight moves to e4 and takes Black Pawn
+-  3.White Knight moves to e4 and takes Black Pawn
 
-3.Black Bishop moves to e6
+-  3.Black Bishop moves to e6
 
-4.White Pawn moves to b3
+-  4.White Pawn moves to b3
 
-4.Black Knight moves to c6
+-  4.Black Knight moves to c6
 
-5.White Bishop moves to c4
+-  5.White Bishop moves to c4
 
-5.Black Pawn moves to e5
+-  5.Black Pawn moves to e5
 
 ---
 
