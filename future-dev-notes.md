@@ -218,7 +218,7 @@ const openingBook = {
 -  5.Black Pawn moves to e5
 
 
-- ⚠️ Mhh it lagged on my Mac on chrome, but on an older Windows it works fine lol. I guess it's just a regular chess game with no twist? I see castling isn't even implemented.
+- ⚠️ Mhh it lagged on my Mac on chrome, but on an older Windows it works fine lol.
 
 ---
 
